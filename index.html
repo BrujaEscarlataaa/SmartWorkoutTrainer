@@ -1,0 +1,274 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SmartWorkoutTrainer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  /* design « progress2 » (Figma) appliqué à toutes les pages */
+  :root { --bg:#eaf0fb; --card:#fff; --txt:#10203d; --muted:#3e4c65; --accent:#064fe8; --accent-2:#487ff0; --vert:#087a66; --violet:#6936cf; --rouge:#c8242f;
+    --nuit:#102d59; --piste:#cad7f1; --border:#b9c9e2; --zone:#cfe3ff; --zone-hover:#7fb5ff; --cible:#ffb35c; --body:#dde5f2; }
+  @media (prefers-color-scheme: dark) { :root { --bg:#0e1626; --card:#16213a; --txt:#e8edf6; --muted:#a3b0c6; --accent:#3d7bff; --accent-2:#6d9cff; --vert:#0f9a80; --violet:#7d4fe0; --rouge:#e0454f;
+    --nuit:#0a1830; --piste:#2a3a5c; --border:#2b3a58; --zone:#24425f; --zone-hover:#3d77b8; --cible:#b8742a; --body:#2a3550; } }
+  * { box-sizing: border-box; }
+  [hidden] { display:none !important; }
+  body { margin:0; font-family: Inter, system-ui, sans-serif; background:var(--bg); color:var(--txt); line-height:1.4; }
+  a { color:var(--accent); }
+
+  /* barre de navigation */
+  .top { background:var(--card); display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px 24px; padding:22px 64px; }
+  .marque b { display:block; font-size:26px; }
+  .marque span { color:var(--muted); font-size:15px; }
+  nav { display:flex; flex-wrap:wrap; gap:8px; }
+  nav a { padding:12px 18px; border-radius:10px; color:var(--muted); font-size:18px; font-weight:500; text-decoration:none; }
+  nav a:hover { background:var(--bg); }
+  nav a[aria-current="page"] { background:var(--accent); color:#fff; font-weight:600; }
+  nav a.inactif { opacity:.45; pointer-events:none; }
+
+  main { padding:36px 64px 0; max-width:1280px; margin:auto; }
+  .vue > * + * { margin-top:24px; }
+  .hero p { margin:0; }
+  .eyebrow { color:var(--accent); font-size:15px; font-weight:700; letter-spacing:1.5px; text-transform:uppercase; }
+  .hero h1 { margin:6px 0; font-size:44px; line-height:1.2; }
+  .hero .sous { color:var(--muted); font-size:19px; }
+
+  /* chiffres clés */
+  .kpis { display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:20px; }
+  .kpi { border-radius:14px; padding:22px; color:#fff; display:flex; flex-direction:column; gap:6px; background:var(--accent); }
+  .kpi.vert { background:var(--vert); } .kpi.violet { background:var(--violet); }
+  .kpi span { font-size:17px; font-weight:500; }
+  .kpi b { font-size:44px; line-height:1.2; }
+  .kpi small { font-size:16px; }
+
+  /* cartes */
+  .grille { display:grid; grid-template-columns:minmax(0, 1fr) 368px; gap:24px; align-items:start; }
+  .grille > * + * { margin-top:0; }
+  .card { background:var(--card); border:1px solid var(--border); border-radius:14px; padding:24px; }
+  .card h2, .actif h2 { margin:0 0 4px; font-size:24px; font-weight:600; }
+  .card h2 + .note { margin-top:0; }
+  .card > .note:first-of-type { font-size:17px; }
+  .actif { background:var(--accent); color:#fff; border-radius:14px; padding:24px; display:flex; flex-direction:column; gap:16px; }
+  .actif p, .actif ul { margin:0; }
+  .actif h2 { font-size:30px; font-weight:700; margin:0; }
+  .actif a { color:#fff; }
+  .actif .gros { display:flex; gap:6px; align-items:baseline; font-size:18px; font-weight:500; }
+  .actif .gros b { font-size:48px; line-height:1.1; }
+  .actif ul { padding-left:20px; display:flex; flex-direction:column; gap:4px; }
+  .actif small { opacity:.85; }
+  .actif label { color:#fff; flex-direction:row; align-items:center; gap:8px; font-size:17px; font-weight:500; }
+  .actif .tag { align-self:flex-start; background:#fff !important; color:var(--accent); }
+  .actif .tag.sp { color:var(--sp); } .actif .tag.retard { color:var(--rouge); }
+  .actif .bloc { display:flex; flex-direction:column; gap:10px; }
+  .actif .bloc + .bloc { border-top:1px solid rgba(255,255,255,.35); padding-top:16px; }
+  .pile { display:flex; flex-direction:column; gap:24px; }
+  #programme > .card + .card { margin-top:24px; }
+  .entete-prog { display:flex; justify-content:space-between; align-items:flex-start; gap:12px; flex-wrap:wrap; }
+  button.secondaire { background:transparent; color:var(--txt); border:1px solid var(--border); font-size:15px; padding:8px 14px; }
+
+  /* image par sport */
+  .photo { display:block; width:100%; aspect-ratio:16 / 10; object-fit:cover; object-position:center 30%; border-radius:10px; background:var(--piste); }
+  .photo.vignette { width:72px; height:72px; aspect-ratio:1; flex:none; }
+  .profil-grille { display:flex; gap:32px; align-items:flex-start; }
+  .photo-profil { flex:0 0 360px; }
+  .photo-profil:empty { display:none; }
+  .profil-form { flex:1; min-width:0; }
+  .photo.entiere { aspect-ratio:1; object-fit:contain; }
+  .entete-prog h2 { flex:1; align-self:center; }
+
+  /* couleur par sport */
+  .tag.sp { background:var(--sp); color:#fff; }
+  .puce { display:inline-block; width:12px; height:12px; border-radius:4px; margin-right:8px; vertical-align:middle; }
+  .cal .pastille { display:block; margin:3px 4px 0; padding:1px 4px; border-radius:6px; background:var(--sp); color:#fff; font-size:12px; font-weight:600; white-space:nowrap; overflow:hidden; }
+  .cal .pastille[data-st="retard"] { outline:2px solid var(--rouge); outline-offset:1px; }
+  .cal .pastille[data-st="faite"] { opacity:.75; }
+
+  h3 { margin:20px 0 8px; font-size:18px; font-weight:600; }
+  .note, .exo small { color:var(--muted); }
+  .erreur { color:var(--rouge); font-weight:600; }
+
+  /* formulaires */
+  form { display:grid; grid-template-columns: 1fr 1fr; gap:14px; margin-top:16px; }
+  label { display:flex; flex-direction:column; font-size:15px; font-weight:500; gap:6px; color:var(--muted); }
+  select, input { font:inherit; font-size:16px; padding:10px 12px; border-radius:10px; border:1px solid var(--border); background:var(--card); color:var(--txt); }
+  input[type="checkbox"] { width:18px; height:18px; accent-color:var(--accent); padding:0; }
+  fieldset { grid-column: 1 / -1; border:1px solid var(--border); border-radius:10px; display:flex; flex-wrap:wrap; gap:8px 18px; color:var(--muted); font-size:15px; padding:12px 16px; }
+  fieldset label { flex-direction:row; align-items:center; color:var(--txt); }
+  button { grid-column: 1 / -1; font:inherit; font-size:17px; font-weight:600; padding:12px 18px; border:0; border-radius:10px; background:var(--accent); color:#fff; cursor:pointer; }
+  button:hover { filter:brightness(1.1); }
+
+  /* tags / statuts (pastilles) */
+  .tag { display:inline-block; font-size:14px; font-weight:600; padding:4px 10px; border-radius:99px; background:var(--zone); margin:2px 2px 0 0; white-space:nowrap; vertical-align:middle; }
+  .faite, .retard, .a-venir { color:#fff; }
+  .faite { background:var(--vert) !important; } .retard { background:var(--rouge) !important; } .a-venir { background:var(--accent) !important; }
+
+  /* barre de réalisation */
+  .barre { height:10px; border-radius:99px; background:var(--piste); overflow:hidden; }
+  .barre span { display:block; height:100%; border-radius:99px; background:var(--accent); }
+  .actif .barre { background:var(--accent-2); } .actif .barre span { background:#fff; }
+  .pct { color:var(--accent); font-weight:600; font-size:17px; display:block; margin-bottom:7px; }
+
+  /* tableau */
+  .table { overflow-x:auto; }
+  table { width:100%; border-collapse:separate; border-spacing:0; font-size:18px; margin-top:12px; }
+  thead th { background:var(--nuit); color:#fff; font-size:16px; font-weight:500; padding:12px; text-align:left; }
+  thead th:first-child { border-radius:8px 0 0 8px; } thead th:last-child { border-radius:0 8px 8px 0; }
+  tbody th, tbody td { padding:18px 12px; text-align:left; font-weight:500; }
+  tbody th { font-weight:600; }
+  td .barre { width:150px; }
+
+  /* listes (historique, checklist) */
+  .liste, .checklist { list-style:none; padding:0; margin:0; }
+  .liste li { display:flex; align-items:center; gap:12px 24px; flex-wrap:wrap; padding:18px 0 12px; font-size:17px; }
+  .liste li b { width:210px; font-size:18px; font-weight:600; }
+  .liste li .periode { flex:1; color:var(--muted); }
+  .liste li .nb { font-weight:500; }
+  .checklist li { display:flex; justify-content:space-between; align-items:center; gap:12px; padding:12px 0; border-top:1px solid var(--border); }
+  .checklist li:first-child { border-top:0; }
+  .checklist label { flex-direction:row; align-items:center; gap:10px; color:var(--txt); font-size:16px; }
+
+  /* séances */
+  details.seance summary { cursor:pointer; font-weight:600; font-size:17px; }
+  .seance { border-top:1px solid var(--border); padding-top:14px; margin-top:14px; }
+  .exo { margin:10px 0; }
+  .exo b { display:block; }
+
+  /* calendrier et semaine */
+  .cal { display:grid; grid-template-columns:repeat(7, 1fr); gap:6px; text-align:center; font-size:15px; }
+  .cal .entete { color:var(--muted); font-size:14px; font-weight:600; }
+  .cal .jour { padding:8px 0; border-radius:10px; min-height:3.2em; background:var(--bg); }
+  .cal .auj { outline:2px solid var(--txt); }
+  .nav-mois { display:flex; align-items:center; justify-content:space-between; margin:4px 0 12px; }
+  .nav-mois h3 { margin:0; text-transform:capitalize; }
+  .nav-mois button { grid-column:auto; padding:6px 16px; font-size:1.2rem; }
+  .nav-mois button:disabled { opacity:.35; cursor:default; }
+  .ic { display:inline-flex; width:2em; height:2em; border-radius:50%; align-items:center; justify-content:center; margin-top:4px; }
+
+  /* corps interactif */
+  svg { width:100%; max-width:420px; display:block; margin:auto; }
+  .corps { fill:var(--body); }
+  .zone { fill:var(--zone); cursor:pointer; stroke:transparent; stroke-width:2; }
+  .zone.cible { fill:var(--cible); }
+  .zone:hover, .zone:focus, .zone.actif { fill:var(--zone-hover); outline:none; stroke:var(--accent); }
+  .legende { text-align:center; font-size:.8rem; color:var(--muted); fill:var(--muted); }
+
+  .avert { font-size:15px; color:var(--muted); max-width:1280px; margin:auto; padding:28px 64px; }
+
+  @media (max-width: 900px) {
+    .top, main, .avert { padding-left:16px; padding-right:16px; }
+    .top { padding-top:16px; padding-bottom:12px; }
+    nav a { padding:8px 12px; font-size:16px; }
+    main { padding-top:24px; }
+    .hero h1 { font-size:34px; }
+    .grille { grid-template-columns:1fr; }
+    form { grid-template-columns:1fr; }
+    .liste li b { width:auto; }
+    .profil-grille { flex-direction:column; }
+    .photo-profil { flex:none; width:100%; max-width:360px; }
+  }
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="marque"><b>SmartWorkoutTrainer</b><span>Your workouts. Your goals. Your progress.</span></div>
+  <nav>
+    <a href="#accueil" data-lien="accueil">Accueil</a>
+    <a href="#seances" data-lien="seances">Séances</a>
+    <a href="#calendrier" data-lien="calendrier">Calendrier</a>
+    <a href="#profil" data-lien="profil">Profil</a>
+    <a href="#progres" data-lien="progres">Progrès</a>
+  </nav>
+</header>
+<main>
+  <!-- Accueil : résumé, semaine en cours, séance du jour ou prochaine séance -->
+  <section class="vue" data-vue="accueil" id="page-accueil" hidden></section>
+
+  <!-- Profil : première page tant qu'il n'est pas rempli -->
+  <section class="vue" data-vue="profil" hidden>
+    <div class="hero">
+      <p class="eyebrow">Mon profil</p>
+      <h1>Parle-nous de toi</h1>
+      <p class="sous">Ces informations servent à adapter les exercices. Elles restent dans ton navigateur.</p>
+    </div>
+    <div class="card profil-grille">
+      <div id="photo-profil" class="photo-profil"></div>
+      <div class="profil-form">
+      <h2>Mes informations</h2>
+      <form id="form-profil">
+        <label>Sport <select name="sport" id="sport"></select></label>
+        <label>Tranche d'âge <select name="age" id="age"></select></label>
+        <label>Sexe
+          <select name="sexe">
+            <option value="homme">Homme</option><option value="femme">Femme</option><option value="ni">Non identifié</option>
+          </select>
+        </label>
+        <label id="label-frequence">Pratique sportive <select name="frequence" id="frequence"></select></label>
+        <label id="label-niveau" hidden>Niveau <select name="niveau" id="niveau"></select></label>
+        <label>Taille (cm) <input name="taille" type="number" min="120" max="230" value="170" required></label>
+        <label>Poids (kg) <input name="poids" type="number" min="30" max="250" value="65" required></label>
+        <button type="submit">Valider mon profil</button>
+      </form>
+      </div>
+    </div>
+  </section>
+
+  <!-- Séances : création du programme + détail des exercices -->
+  <section class="vue" data-vue="seances" hidden>
+    <div class="hero">
+      <p class="eyebrow">Mon programme</p>
+      <h1>Mes séances</h1>
+      <p class="sous"><span id="resume-profil"></span> · <a href="#profil">Modifier mon profil</a></p>
+    </div>
+    <div class="card">
+      <h2>Mon objectif</h2>
+      <p class="note">Tu peux suivre plusieurs sports en même temps (un programme par sport) : deux séances peuvent tomber le même jour. Recréer un programme remplace celui du même sport.</p>
+      <form id="objectif">
+        <label>Sport du programme <select name="sport" id="sport-prog"></select></label>
+        <label id="label-frequence-prog">Pratique sportive <select name="frequence" id="frequence-prog"></select></label>
+        <label id="label-niveau-prog" hidden>Niveau <select name="niveau" id="niveau-prog"></select></label>
+        <label>Je commence le <input name="debut" id="debut" type="date" required></label>
+        <label>Je dois être prêt·e pour le <input name="echeance" id="echeance" type="date" required></label>
+        <label>Durée d'une séance <select name="duree" id="duree"></select></label>
+        <label>Séances par semaine <select name="seancesSemaine" id="seancesSemaine"></select></label>
+        <fieldset id="jours"><legend>Mes jours préférés (facultatif, 6 maximum) : 1 séance par jour coché</legend></fieldset>
+        <label>Intensité des séances <select name="intensite" id="intensite"></select></label>
+        <label>Matériel
+          <select name="avecMateriel" id="avecMateriel"><option value="non">Sans matériel</option><option value="oui">Avec matériel</option></select>
+        </label>
+        <fieldset id="materiel" hidden><legend>Matériel que je veux utiliser</legend></fieldset>
+        <button type="submit">Créer mon programme</button>
+      </form>
+    </div>
+    <div id="programme" hidden></div>
+    <div class="card">
+      <h2>Corps interactif</h2>
+      <p class="note">Clique sur une zone pour voir les exercices qui la renforcent. En orange : les zones ciblées par ton programme.</p>
+      <svg id="silhouette" viewBox="0 0 420 400" role="group" aria-label="Silhouette, vue de face et de dos"></svg>
+      <div id="zone-exos"></div>
+    </div>
+  </section>
+
+  <section class="vue" data-vue="calendrier" hidden>
+    <div class="hero">
+      <p class="eyebrow">Mon planning</p>
+      <h1>Calendrier</h1>
+      <p class="sous" id="legende"></p>
+    </div>
+    <div class="grille">
+      <div class="card"><div id="cal"></div></div>
+      <div class="card">
+        <h2>Mes séances</h2>
+        <p class="note">Coche une séance quand tu l'as faite.</p>
+        <ul id="checklist" class="checklist"></ul>
+      </div>
+    </div>
+  </section>
+
+  <section class="vue" data-vue="progres" id="page-progres" hidden></section>
+</main>
+<p class="avert">SmartWorkoutTrainer donne des conseils généraux et ne remplace pas l'avis d'un médecin ou d'un kiné. En cas de douleur, arrête l'exercice.</p>
+<script src="logic.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
